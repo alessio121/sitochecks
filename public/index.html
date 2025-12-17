@@ -304,7 +304,7 @@
         </div>
         <div class="form-group">
           <label for="beneficialOwner">Beneficial Owner</label>
-          <input type="text" id="beneficialOwner" name="beneficialOwner" required placeholder="Inserisci nome e cognome">
+          <input type="text" id="beneficialOwner" name="beneficialOwner" placeholder="Inserisci nome e cognome (opzionale)">
         </div>
         <button type="submit" class="btn-primary">Aggiungi</button>
       </div>
@@ -363,7 +363,7 @@
       tbody.innerHTML = records.map(record => `
         <tr id="row-${record.id}">
           <td>${escapeHtml(record.company)}</td>
-          <td>${escapeHtml(record.beneficialOwner)}</td>
+          <td>${record.beneficialOwner ? escapeHtml(record.beneficialOwner) : '<em style="color:#999">Non specificato</em>'}</td>
           <td>
             <span class="status-indicator status-${record.status}"></span>
             <span class="status-text ${record.status}">
@@ -380,13 +380,14 @@
                 ${record.companyMatch && record.companyDetails && record.companyDetails.length > 0 ?
                   `<span class="sanction-lists">${formatSanctionLists(record.companyDetails)}</span>` : ''}
               </div>
+              ${record.beneficialOwner ? `
               <div class="match-row">
                 <span class="match-owner match-${record.ownerMatch}">
                   Owner: ${record.ownerMatch ? 'MATCH' : 'OK'}
                 </span>
                 ${record.ownerMatch && record.ownerDetails && record.ownerDetails.length > 0 ?
                   `<span class="sanction-lists">${formatSanctionLists(record.ownerDetails)}</span>` : ''}
-              </div>
+              </div>` : ''}
             ` : '-'}
           </td>
           <td class="actions">
@@ -450,8 +451,8 @@
       const company = document.getElementById('company').value.trim();
       const beneficialOwner = document.getElementById('beneficialOwner').value.trim();
 
-      if (!company || !beneficialOwner) {
-        alert('Compila tutti i campi');
+      if (!company) {
+        alert('Il nome azienda è richiesto');
         return;
       }
 

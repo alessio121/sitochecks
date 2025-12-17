@@ -33,15 +33,15 @@ app.get('/api/records', (req, res) => {
 app.post('/api/records', (req, res) => {
   const { company, beneficialOwner } = req.body;
 
-  if (!company || !beneficialOwner) {
-    return res.status(400).json({ error: 'Company e beneficial owner sono richiesti' });
+  if (!company) {
+    return res.status(400).json({ error: 'Il nome azienda è richiesto' });
   }
 
   const data = loadData();
   const newRecord = {
     id: Date.now().toString(),
     company,
-    beneficialOwner,
+    beneficialOwner: beneficialOwner || '',
     status: 'unchecked', // unchecked, clear, alert
     companyMatch: null,
     ownerMatch: null,

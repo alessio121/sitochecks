@@ -163,11 +163,16 @@ async function checkSanctions(company, beneficialOwner) {
     companyResult = await searchName(page, company, true);
     console.log(`Risultato azienda: ${companyResult.hasMatch ? 'MATCH TROVATO' : 'Nessun match'}`);
 
-    await page.waitForTimeout(1000);
+    // Controlla beneficial owner solo se specificato
+    if (beneficialOwner && beneficialOwner.trim()) {
+      await page.waitForTimeout(1000);
 
-    console.log(`\n=== Controllo beneficial owner: ${beneficialOwner} ===`);
-    ownerResult = await searchName(page, beneficialOwner, false);
-    console.log(`Risultato owner: ${ownerResult.hasMatch ? 'MATCH TROVATO' : 'Nessun match'}`);
+      console.log(`\n=== Controllo beneficial owner: ${beneficialOwner} ===`);
+      ownerResult = await searchName(page, beneficialOwner, false);
+      console.log(`Risultato owner: ${ownerResult.hasMatch ? 'MATCH TROVATO' : 'Nessun match'}`);
+    } else {
+      console.log('\n=== Beneficial owner non specificato, skip ===');
+    }
 
   } catch (error) {
     console.error('Errore durante la ricerca:', error);
