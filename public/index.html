@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controllo Sanzioni</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+
+    .form-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 15px;
+      align-items: flex-end;
+    }
+
+    .form-group {
+      flex: 1;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #555;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: #007bff;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #0056b3;
+    }
+
+    .btn-check {
+      background: #6c757d;
+      color: white;
+    }
+
+    .btn-check:hover {
+      background: #545b62;
+    }
+
+    .btn-check:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .btn-delete {
+      background: #dc3545;
+      color: white;
+      padding: 5px 10px;
+    }
+
+    .btn-delete:hover {
+      background: #c82333;
+    }
+
+    table {
+      width: 100%;
+      background: white;
+      border-collapse: collapse;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background: #333;
+      color: white;
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background: #f9f9f9;
+    }
+
+    .status-indicator {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    .status-unchecked {
+      background: #999;
+    }
+
+    .status-clear {
+      background: #28a745;
+    }
+
+    .status-alert {
+      background: #dc3545;
+    }
+
+    .status-text {
+      font-weight: 600;
+    }
+
+    .status-text.clear {
+      color: #28a745;
+    }
+
+    .status-text.alert {
+      color: #dc3545;
+    }
+
+    .status-text.unchecked {
+      color: #999;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .last-checked {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #fff;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 5px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #888;
+    }
+
+    .details {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .match-company, .match-owner {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 11px;
+      margin-right: 4px;
+    }
+
+    .match-true {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .match-false {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .match-row {
+      margin-bottom: 4px;
+    }
+
+    .sanction-lists {
+      display: block;
+      font-size: 10px;
+      color: #c62828;
+      font-weight: 600;
+      margin-top: 2px;
+      padding: 2px 4px;
+      background: #ffcdd2;
+      border-radius: 3px;
+    }
+
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .table-header h2 {
+      margin: 0;
+      color: #333;
+    }
+
+    .btn-check-all {
+      background: #17a2b8;
+      color: white;
+      padding: 12px 24px;
+      font-size: 16px;
+    }
+
+    .btn-check-all:hover {
+      background: #138496;
+    }
+
+    .btn-check-all:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .progress-bar {
+      display: none;
+      background: #e9ecef;
+      border-radius: 4px;
+      height: 24px;
+      margin-bottom: 15px;
+      overflow: hidden;
+    }
+
+    .progress-bar.active {
+      display: block;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #17a2b8;
+      transition: width 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <h1>Controllo Sanzioni</h1>
+
+  <div class="form-container">
+    <form id="addForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="company">Nome Azienda</label>
+          <input type="text" id="company" name="company" required placeholder="Inserisci nome azienda">
+        </div>
+        <div class="form-group">
+          <label for="beneficialOwner">Beneficial Owner</label>
+          <input type="text" id="beneficialOwner" name="beneficialOwner" required placeholder="Inserisci nome e cognome">
+        </div>
+        <button type="submit" class="btn-primary">Aggiungi</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="table-header">
+    <h2>Lista Aziende</h2>
+    <button class="btn-check-all" id="checkAllBtn" onclick="checkAllRecords()">
+      Controlla Tutti
+    </button>
+  </div>
+
+  <div class="progress-bar" id="progressBar">
+    <div class="progress-fill" id="progressFill">0%</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Azienda</th>
+        <th>Beneficial Owner</th>
+        <th>Stato</th>
+        <th>Dettagli</th>
+        <th>Azioni</th>
+      </tr>
+    </thead>
+    <tbody id="recordsTable">
+      <tr class="empty-state">
+        <td colspan="5">Nessun record. Aggiungi un'azienda per iniziare.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <script>
+    const API_URL = '/api/records';
+
+    async function loadRecords() {
+      try {
+        const response = await fetch(API_URL);
+        const records = await response.json();
+        renderRecords(records);
+      } catch (error) {
+        console.error('Errore nel caricamento:', error);
+      }
+    }
+
+    function renderRecords(records) {
+      const tbody = document.getElementById('recordsTable');
+
+      if (records.length === 0) {
+        tbody.innerHTML = '<tr class="empty-state"><td colspan="5">Nessun record. Aggiungi un\'azienda per iniziare.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = records.map(record => `
+        <tr id="row-${record.id}">
+          <td>${escapeHtml(record.company)}</td>
+          <td>${escapeHtml(record.beneficialOwner)}</td>
+          <td>
+            <span class="status-indicator status-${record.status}"></span>
+            <span class="status-text ${record.status}">
+              ${getStatusText(record.status)}
+            </span>
+            ${record.lastChecked ? `<div class="last-checked">Ultimo: ${formatDate(record.lastChecked)}</div>` : ''}
+          </td>
+          <td class="details">
+            ${record.status !== 'unchecked' ? `
+              <div class="match-row">
+                <span class="match-company match-${record.companyMatch}">
+                  Azienda: ${record.companyMatch ? 'MATCH' : 'OK'}
+                </span>
+                ${record.companyMatch && record.companyDetails && record.companyDetails.length > 0 ?
+                  `<span class="sanction-lists">${formatSanctionLists(record.companyDetails)}</span>` : ''}
+              </div>
+              <div class="match-row">
+                <span class="match-owner match-${record.ownerMatch}">
+                  Owner: ${record.ownerMatch ? 'MATCH' : 'OK'}
+                </span>
+                ${record.ownerMatch && record.ownerDetails && record.ownerDetails.length > 0 ?
+                  `<span class="sanction-lists">${formatSanctionLists(record.ownerDetails)}</span>` : ''}
+              </div>
+            ` : '-'}
+          </td>
+          <td class="actions">
+            <button class="btn-check" onclick="checkRecord('${record.id}')" id="check-${record.id}">
+              Check
+            </button>
+            <button class="btn-delete" onclick="deleteRecord('${record.id}')">
+              Elimina
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function getStatusText(status) {
+      switch (status) {
+        case 'clear': return 'OK';
+        case 'alert': return 'ALERT';
+        default: return 'Non controllato';
+      }
+    }
+
+    function formatDate(dateString) {
+      return new Date(dateString).toLocaleString('it-IT');
+    }
+
+    function formatSanctionLists(details) {
+      if (!details || details.length === 0) return '';
+
+      const allLists = [];
+      details.forEach(d => {
+        if (d.sanctionLists && d.sanctionLists.length > 0) {
+          d.sanctionLists.forEach(list => {
+            if (!allLists.includes(list)) allLists.push(list);
+          });
+        }
+        if (d.rawText) {
+          // Estrai liste dal testo se non già trovate
+          if (d.rawText.includes('OFAC') && !allLists.includes('OFAC (USA)')) allLists.push('OFAC (USA)');
+          if (d.rawText.includes('EU') && !allLists.includes('EU')) allLists.push('EU');
+          if (d.rawText.includes('UN') && !allLists.includes('UN')) allLists.push('UN');
+          if (d.rawText.includes('HMT') && !allLists.includes('HMT (UK)')) allLists.push('HMT (UK)');
+        }
+      });
+
+      if (allLists.length > 0) {
+        return allLists.join(', ');
+      }
+      return 'Lista non specificata';
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    async function addRecord(event) {
+      event.preventDefault();
+
+      const company = document.getElementById('company').value.trim();
+      const beneficialOwner = document.getElementById('beneficialOwner').value.trim();
+
+      if (!company || !beneficialOwner) {
+        alert('Compila tutti i campi');
+        return;
+      }
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ company, beneficialOwner })
+        });
+
+        if (response.ok) {
+          document.getElementById('addForm').reset();
+          loadRecords();
+        } else {
+          const error = await response.json();
+          alert(error.error);
+        }
+      } catch (error) {
+        console.error('Errore:', error);
+        alert('Errore durante l\'aggiunta');
+      }
+    }
+
+    async function deleteRecord(id) {
+      if (!confirm('Sei sicuro di voler eliminare questo record?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+          loadRecords();
+        }
+      } catch (error) {
+        console.error('Errore:', error);
+        alert('Errore durante l\'eliminazione');
+      }
+    }
+
+    async function checkRecord(id) {
+      const button = document.getElementById(`check-${id}`);
+      const row = document.getElementById(`row-${id}`);
+
+      button.disabled = true;
+      button.innerHTML = '<span class="spinner"></span>Controllo...';
+      row.classList.add('loading');
+
+      try {
+        const response = await fetch(`${API_URL.replace('/records', '/check')}/${id}`, {
+          method: 'POST'
+        });
+
+        if (response.ok) {
+          loadRecords();
+        } else {
+          const error = await response.json();
+          alert(error.error);
+        }
+      } catch (error) {
+        console.error('Errore:', error);
+        alert('Errore durante il controllo');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Check';
+        row.classList.remove('loading');
+      }
+    }
+
+    async function checkAllRecords() {
+      const checkAllBtn = document.getElementById('checkAllBtn');
+      const progressBar = document.getElementById('progressBar');
+      const progressFill = document.getElementById('progressFill');
+
+      // Ottieni tutti i record
+      const response = await fetch(API_URL);
+      const records = await response.json();
+
+      if (records.length === 0) {
+        alert('Nessun record da controllare');
+        return;
+      }
+
+      // Disabilita il tasto e mostra la progress bar
+      checkAllBtn.disabled = true;
+      checkAllBtn.innerHTML = '<span class="spinner"></span>Controllo in corso...';
+      progressBar.classList.add('active');
+
+      let completed = 0;
+      const total = records.length;
+
+      // Esegui i check uno alla volta
+      for (const record of records) {
+        try {
+          progressFill.style.width = `${(completed / total) * 100}%`;
+          progressFill.textContent = `${completed}/${total} - Controllo: ${record.company}`;
+
+          const button = document.getElementById(`check-${record.id}`);
+          const row = document.getElementById(`row-${record.id}`);
+
+          if (button) {
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner"></span>...';
+          }
+          if (row) {
+            row.classList.add('loading');
+          }
+
+          await fetch(`/api/check/${record.id}`, { method: 'POST' });
+
+          completed++;
+          await loadRecords();
+
+        } catch (error) {
+          console.error(`Errore nel controllo di ${record.company}:`, error);
+          completed++;
+        }
+      }
+
+      // Completato
+      progressFill.style.width = '100%';
+      progressFill.textContent = `Completato: ${completed}/${total}`;
+
+      // Nascondi la progress bar dopo 2 secondi
+      setTimeout(() => {
+        progressBar.classList.remove('active');
+        progressFill.style.width = '0%';
+      }, 2000);
+
+      checkAllBtn.disabled = false;
+      checkAllBtn.textContent = 'Controlla Tutti';
+      loadRecords();
+    }
+
+    document.getElementById('addForm').addEventListener('submit', addRecord);
+    loadRecords();
+  </script>
+</body>
+</html>
