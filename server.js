@@ -53,6 +53,36 @@ app.post('/api/records', (req, res) => {
   res.status(201).json(newRecord);
 });
 
+// PUT - Modifica record
+app.put('/api/records/:id', (req, res) => {
+  const { id } = req.params;
+  const { company, beneficialOwner } = req.body;
+
+  if (!company) {
+    return res.status(400).json({ error: 'Il nome azienda è richiesto' });
+  }
+
+  let data = loadData();
+  const record = data.find(r => r.id === id);
+
+  if (!record) {
+    return res.status(404).json({ error: 'Record non trovato' });
+  }
+
+  record.company = company;
+  record.beneficialOwner = beneficialOwner || '';
+  // Reset status se i dati sono cambiati
+  record.status = 'unchecked';
+  record.companyMatch = null;
+  record.ownerMatch = null;
+  record.companyDetails = [];
+  record.ownerDetails = [];
+  record.lastChecked = null;
+
+  saveData(data);
+  res.json(record);
+});
+
 // DELETE - Elimina record
 app.delete('/api/records/:id', (req, res) => {
   const { id } = req.params;
