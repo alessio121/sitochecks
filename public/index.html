@@ -422,6 +422,8 @@
 
   <script>
     const API_URL = '/api/records';
+    let checkAllRunning = false;
+    let checkAllAborted = false;
 
     async function loadRecords() {
       try {
@@ -610,6 +612,14 @@
       const progressBar = document.getElementById('progressBar');
       const progressFill = document.getElementById('progressFill');
 
+      // Se già in esecuzione, interrompi
+      if (checkAllRunning) {
+        checkAllAborted = true;
+        checkAllBtn.disabled = true;
+        checkAllBtn.textContent = 'Interruzione...';
+        return;
+      }
+
       // Ottieni tutti i record
       const response = await fetch(API_URL);
       const records = await response.json();
@@ -619,9 +629,11 @@
         return;
       }
 
-      // Disabilita il tasto e mostra la progress bar
-      checkAllBtn.disabled = true;
-      checkAllBtn.innerHTML = '<span class="spinner"></span>Controllo in corso...';
+      // Inizia il processo
+      checkAllRunning = true;
+      checkAllAborted = false;
+      checkAllBtn.style.background = '#dc3545';
+      checkAllBtn.textContent = 'Interrompi';
       progressBar.classList.add('active');
 
       let completed = 0;
@@ -629,6 +641,13 @@
 
       // Esegui i check uno alla volta
       for (const record of records) {
+        // Controlla se è stato richiesto di interrompere
+        if (checkAllAborted) {
+          progressFill.style.width = `${(completed / total) * 100}%`;
+          progressFill.textContent = `Interrotto: ${completed}/${total}`;
+          break;
+        }
+
         try {
           progressFill.style.width = `${(completed / total) * 100}%`;
           progressFill.textContent = `${completed}/${total} - Controllo: ${record.company}`;
@@ -655,9 +674,11 @@
         }
       }
 
-      // Completato
-      progressFill.style.width = '100%';
-      progressFill.textContent = `Completato: ${completed}/${total}`;
+      // Completato o interrotto
+      if (!checkAllAborted) {
+        progressFill.style.width = '100%';
+        progressFill.textContent = `Completato: ${completed}/${total}`;
+      }
 
       // Nascondi la progress bar dopo 2 secondi
       setTimeout(() => {
@@ -665,7 +686,11 @@
         progressFill.style.width = '0%';
       }, 2000);
 
+      // Reset stato
+      checkAllRunning = false;
+      checkAllAborted = false;
       checkAllBtn.disabled = false;
+      checkAllBtn.style.background = '';
       checkAllBtn.textContent = 'Controlla Tutti';
       loadRecords();
     }
